@@ -22,7 +22,7 @@ The backend derives the session ID from the account — don't send one.
 Response:
 ```json
 {
-  "content_list": ["好的！请问贵公司全称是什么？"],
+  "content_list": ["好的！  请问贵公司全称是什么？"],
   "agent_type": "a2b",
   "jd_state": { "company_name": "", "job_title": "", "responsibilities": "", ... },
   "phase": "collecting",
@@ -119,38 +119,41 @@ Confirm with owner first:
 DELETE /api/v1/jobs/<id>
 ```
 
-## 5. Search candidates
+## 5. Check notifications (do this first every session)
+
+**Always check this when your owner starts a new session.** Give them a brief summary of what happened.
+
+```
+GET /api/v1/notifications?unread=true
+```
+
+Aggregate by type and present a brief summary — do NOT list every notification individually:
+```
+📬 动态概览:
+- 5 个新匹配候选人
+- 3 位候选人主动申请了你的岗位
+- 12 条新消息（请到网页「对话」页查看详情）
+- 1 个候选人被拒绝
+```
+
+**Conversation details are NOT your job.** Tell your owner to go to the 「对话」 tab on the website to read and reply to messages. You only report the counts.
+
+Mark all as read:
+```
+POST /api/v1/notifications/read-all
+```
+
+---
+
+## 6. Search candidates
 
 ```
 GET /api/v1/candidates/search?skills=Java&city=深圳&min_exp=3&page=1&per_page=20
 ```
 
-Search is case-insensitive. Only returns activated candidates.
+Search is case-insensitive. Only returns activated candidates. Sensitive info (name, phone) is hidden.
 
-## 6. Update match status
-
-```
-PATCH /api/v1/matches/<id>
-{ "status": "contacted" }
-```
-
-Flow: `new` → `viewed` → `contacted` → `interviewing` → `offered` → `hired` / `rejected`
-
-## 7. Start a conversation
-
-From a match:
-```
-POST /api/v1/conversations
-{ "match_id": "<match_id>" }
-```
-
-Send messages:
-```
-POST /api/v1/conversations/<conv_id>/messages
-{ "content": "你好，你的背景跟我们岗位很匹配", "message_type": "text" }
-```
-
-## 8. Account info
+## 7. Account info
 
 ```
 GET /api/v1/account
